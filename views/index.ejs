@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+    <div class="content">
+        <% if (error) { %>
+            <p style="color: red;"><%= error %></p>
+        <% } %>
+        <% if (success) { %>
+            <p style="color: green;"><%= success %></p>
+        <% } %>
+
+        <form id="create" method="POST" action="/" enctype="multipart/form-data">
+            <input type="number" name="ma_sp" placeholder="ProductID" />
+            <input type="text" name="ten_sp" placeholder="ProductName" />
+            <input type="number" name="so_luong" placeholder="Quantity" />
+            <input type="submit" value="Submit" />
+        </form>
+
+        <form id="delete" method="POST" action="/delete">
+            <div class="title"><h5>Product List</h5><input type="submit" value="Delete" /></div>
+            <table border="1"> 
+                <tr>
+                    <th>ProductID</th>
+                    <th>ProductName</th>
+                    <th>Quantity</th>
+                    <th>Choose</th>
+                </tr>
+                <% for (let i = 0; i < sanPhams.length; i++) { %>
+                    <tr>
+                        <td><%=sanPhams[i].ma_sp%></td>
+                        <td><%=sanPhams[i].ten_sp%></td>
+                        <td><%=sanPhams[i].so_luong%></td>
+                        <td><input type="checkbox" name="<%=sanPhams[i].ma_sp%>" value="true" /></td>
+                    </tr>
+                <% } %>
+            </table>
+        </form>
+    </div>
+</body>
+</html>
