@@ -1,9 +1,9 @@
 require('dotenv').config(); // Thêm dòng này để tải biến môi trường từ file .env
 const express = require('express');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { ScanCommand, PutCommand, DeleteCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+const { ScanCommand, PutCommand,GetCommand, DeleteCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 const multer = require('multer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const path = require('path');
 const { v4: uuid } = require('uuid');
 const app = express();
@@ -149,7 +149,7 @@ app.post('/', upload.single('image'), async (req, res) => {
     }
 });
 
-// Xóa sản phẩm trong DynamoDB
+// Xóa sản phẩm trong DynamoDB và ảnh trong S3
 app.post('/delete', async (req, res) => {
     console.log("req.body:", req.body);
     
@@ -164,15 +164,35 @@ app.post('/delete', async (req, res) => {
         }
         
         try {
-            const command = new DeleteCommand({
+            // 1. Lấy thông tin sản phẩm từ DynamoDB trước khi xóa
+            const getCommand = new GetCommand({
                 TableName: tableName,
                 Key: { "ma_sp": String(listItems[index]) }
             });
+            const product = await docClient.send(getCommand);
             
-            await docClient.send(command);
+            // 2. Nếu sản phẩm có image_url, xóa ảnh trong S3
+            if (product.Item && product.Item.image_url) {
+                const imageUrl = product.Item.image_url;
+                const fileKey = imageUrl.split('/').pop(); // Trích xuất Key từ URL (phần sau CLOUD_FRONT_URL)
+                
+                const deleteS3Params = {
+                    Bucket: "uploads3bucketlab7",
+                    Key: fileKey
+                };
+                await s3.send(new DeleteObjectCommand(deleteS3Params));
+                console.log(`✅ Đã xóa ảnh trong S3: ${fileKey}`);
+            }
+
+            // 3. Xóa bản ghi trong DynamoDB
+            const deleteCommand = new DeleteCommand({
+                TableName: tableName,
+                Key: { "ma_sp": String(listItems[index]) }
+            });
+            await docClient.send(deleteCommand);
             console.log(`✅ Xóa sản phẩm: ${listItems[index]}`);
         } catch (err) {
-            console.error("❌ Lỗi xóa dữ liệu từ DynamoDB:", err);
+            console.error("❌ Lỗi khi xóa:", err);
             return res.redirect('/?error=Failed to delete items');
         }
         
