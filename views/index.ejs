@@ -15,9 +15,9 @@
         <% } %>
 
         <form id="create" method="POST" action="/" enctype="multipart/form-data">
-            <input type="number" name="ma_sp" placeholder="ProductID" />
-            <input type="text" name="ten_sp" placeholder="ProductName" />
-            <input type="number" name="so_luong" placeholder="Quantity" />
+            <input type="number" name="ma_sp" placeholder="ProductID" required/>
+            <input type="text" name="ten_sp" placeholder="ProductName" required/>
+            <input type="number" name="so_luong" placeholder="Quantity" min="1"/>
             <input type="file" name="image" />
             <input type="submit" value="Submit" />
         </form>
@@ -37,7 +37,11 @@
                         <td><%=sanPhams[i].ma_sp%></td>
                         <td><%=sanPhams[i].ten_sp%></td>
                         <td><%=sanPhams[i].so_luong%></td>
-                        <td><img width="50px" src="<%=sanPhams[i].image_url%>"/></td>
+                        <td><% if (sanPhams[i].image_url) { %>
+                            <img width="50px" src="<%= sanPhams[i].image_url %>" />
+                        <% } else { %>
+                            No Image
+                        <% } %></td>
                         <td><input type="checkbox" name="<%=sanPhams[i].ma_sp%>" value="true" /></td>
                     </tr>
                 <% } %>
