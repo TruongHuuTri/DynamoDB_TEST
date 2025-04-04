@@ -206,3 +206,81 @@ const port = 3000;
 app.listen(port, () => {
     console.log(`✅ Server is running at http://localhost:${port}`);
 });
+// // API để thêm sản phẩm mới (không có ảnh, với ràng buộc)
+// app.post('/', async (req, res) => {
+//     const { ma_sp, ten_sp, so_luong } = req.body;
+
+//     // 1. Kiểm tra các trường bắt buộc
+//     if (!ma_sp || !ten_sp || !so_luong) {
+//         return res.redirect('/?error=All fields (ma_sp, ten_sp, so_luong) are required');
+//     }
+
+//     // 2. Kiểm tra so_luong là số nguyên không âm
+//     const quantity = parseInt(so_luong);
+//     if (isNaN(quantity) || quantity < 0) {
+//         return res.redirect('/?error=Quantity must be a non-negative integer');
+//     }
+
+//     try {
+//         // 3. Kiểm tra ma_sp đã tồn tại chưa
+//         const checkCommand = new GetCommand({
+//             TableName: tableName,
+//             Key: { "ma_sp": String(ma_sp) }
+//         });
+//         const existingItem = await docClient.send(checkCommand);
+
+//         if (existingItem.Item) {
+//             return res.redirect('/?error=Product ID (ma_sp) already exists');
+//         }
+
+//         // Nếu vượt qua các ràng buộc, thêm sản phẩm vào DynamoDB
+//         const command = new PutCommand({
+//             TableName: tableName,
+//             Item: {
+//                 "ma_sp": String(ma_sp),
+//                 "ten_sp": ten_sp,
+//                 "so_luong": quantity
+//             }
+//         });
+
+//         await docClient.send(command);
+//         console.log("✅ Thêm dữ liệu vào DynamoDB:", command.input.Item);
+//         return res.redirect('/?success=Item added');
+//     } catch (err) {
+//         console.error("❌ Lỗi thêm dữ liệu vào DynamoDB:", err);
+//         return res.redirect('/?error=Failed to add item');
+//     }
+// });
+
+// // Xóa sản phẩm trong DynamoDB (không xóa ảnh trong S3)
+// app.post('/delete', async (req, res) => {
+//     console.log("req.body:", req.body);
+
+//     const listItems = Object.keys(req.body);
+//     if (listItems.length === 0) {
+//         return res.redirect('/?error=No items selected');
+//     }
+
+//     async function onDeleteItem(index) {
+//         if (index >= listItems.length) {
+//             return res.redirect('/?success=Items deleted');
+//         }
+
+//         try {
+//             // Xóa bản ghi trong DynamoDB
+//             const deleteCommand = new DeleteCommand({
+//                 TableName: tableName,
+//                 Key: { "ma_sp": String(listItems[index]) }
+//             });
+//             await docClient.send(deleteCommand);
+//             console.log(`✅ Xóa sản phẩm: ${listItems[index]}`);
+//         } catch (err) {
+//             console.error("❌ Lỗi khi xóa:", err);
+//             return res.redirect('/?error=Failed to delete items');
+//         }
+
+//         onDeleteItem(index + 1);
+//     }
+
+//     onDeleteItem(0);
+// });
